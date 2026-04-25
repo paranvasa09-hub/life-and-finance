@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Planning & Financial Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Light Mode Variables */
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-color: #1D9E75;
+            --accent-hover: #15805e;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --retire-color: #3498db;
+            --border-width: 1px;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Mode Variables */
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --border-color: #333333;
+            --accent-color: #1D9E75;
+            --accent-hover: #26b98b;
+            --danger-color: #cf6679;
+            --warning-color: #f39c12;
+            --retire-color: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            border-bottom: var(--border-width) solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Dashboard & Login Screens */
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        #main-app,
+        #family-dashboard,
+        #login-screen {
+            display: none;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--card-bg);
+            border-bottom: var(--border-width) solid var(--border-color);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .left-panel {
+            flex: 1 1 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .right-panel {
+            flex: 2 1 600px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: var(--border-width) solid var(--border-color);
+            padding: 1.5rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        input,
+        select {
+            padding: 0.5rem;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            border: var(--border-width) solid var(--border-color);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .primary-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .outline-btn {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: var(--border-width) solid var(--border-color);
+        }
+
+        .outline-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .danger-outline-btn {
+            background-color: transparent;
+            color: var(--danger-color);
+            border: var(--border-width) solid var(--danger-color);
+        }
+
+        .danger-outline-btn:hover {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            height: 100%;
+        }
+
+        .color-swatch {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-swatch.selected {
+            border-color: var(--text-primary);
+        }
+
+        .pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .event-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border: var(--border-width) solid var(--border-color);
+            background-color: var(--bg-color);
+            font-size: 0.875rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .event-pill.inactive {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .event-pill-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .delete-pill {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .delete-pill:hover {
+            color: var(--danger-color);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            border: var(--border-width) solid var(--border-color);
+            padding: 1rem;
+            background-color: var(--bg-color);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .metric-value span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .metric-value.negative {
+            color: var(--danger-color);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 2rem;
+            border: var(--border-width) solid var(--border-color);
+            padding: 1rem;
+            background-color: var(--bg-color);
+        }
+
+        .phase-bar-container {
+            margin-bottom: 2rem;
+        }
+
+        .phase-bar {
+            height: 24px;
+            display: flex;
+            border: var(--border-width) solid var(--border-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .phase-accumulate {
+            background-color: var(--accent-color);
+            height: 100%;
+        }
+
+        .phase-retire {
+            background-color: var(--retire-color);
+            height: 100%;
+        }
+
+        .phase-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .insights-box {
+            border: var(--border-width) solid var(--border-color);
+            padding: 1rem;
+            background-color: var(--bg-color);
+        }
+
+        .insights-box h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .insights-box ul {
+            list-style-position: inside;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .insights-box li {
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                flex-direction: column;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 0.5rem;
+            }
+
+            #login-create-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. Login Screen -->
+    <div id="login-screen" class="dashboard-container">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:500px; margin-bottom:2rem;">
+            <h1>Life & Finance Planner</h1>
+            <button id="login-theme-toggle" class="btn outline-btn">Toggle Theme</button>
+        </div>
+
+        <div class="card" style="width:100%; max-width:500px; margin-bottom: 2rem;">
+            <h2>Select Family Member</h2>
+            <div id="login-member-list"
+                style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                <!-- Generated dynamically -->
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 1.5rem;" />
+            <button class="btn primary-btn full-width" onclick="showFamilyDashboard()">View Collective Family
+                Dashboard</button>
+        </div>
+
+        <div class="card" style="width:100%; max-width:500px;">
+            <h2>Create New Member Profile</h2>
+            <form id="login-create-form" style="display:flex; gap:1rem; align-items:flex-end;">
+                <div class="input-group" style="flex:1;">
+                    <label for="login-new-name">Name</label>
+                    <input type="text" id="login-new-name" placeholder="E.g. Dad, Mom, Rahul..." required
+                        autocomplete="off">
+                </div>
+                <button type="submit" class="btn outline-btn">Create & Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Family Dashboard Screen -->
+    <div id="family-dashboard" class="dashboard-container">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1000px; margin-bottom:2rem;">
+            <div style="display:flex; align-items:center; gap: 1rem;">
+                <button class="btn outline-btn" onclick="showLoginScreen()">&larr; Back</button>
+                <h1 style="margin-bottom: 0;">Family Dashboard</h1>
+            </div>
+            <button id="db-theme-toggle" class="btn outline-btn">Toggle Theme</button>
+        </div>
+
+        <!-- Total Income Card -->
+        <div class="card" style="width:100%; max-width:1000px; text-align:center; margin-bottom: 2rem;">
+            <h2 style="border:none; margin-bottom:0.5rem; color: var(--text-secondary);">Total Family Monthly Income
+            </h2>
+            <div id="total-family-income" style="font-size: 3.5rem; font-weight: 600; color: var(--accent-color);">₹0
+            </div>
+        </div>
+
+        <!-- Member Cards Grid -->
+        <div id="family-members-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1000px; margin-bottom: 2rem;">
+            <!-- Generated dynamically -->
+        </div>
+
+        <!-- Collective Family Goal -->
+        <div class="card" style="width:100%; max-width:1000px; margin-bottom: 2rem;">
+            <h2>Collective Family Goal Planner</h2>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Plan a shared goal (e.g.
+                Bungalow, World Tour) and see if your combined family income is enough.</p>
+            <form id="family-goal-form">
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="fg-name">Goal Name</label>
+                        <input type="text" id="fg-name" placeholder="E.g. Buy a Bungalow" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="fg-amount">Target Amount (₹)</label>
+                        <input type="number" id="fg-amount" required>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="fg-years">Years to Achieve</label>
+                        <input type="number" id="fg-years" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="fg-returns">Expected Return (%)</label>
+                        <input type="number" id="fg-returns" value="10" step="0.1" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn primary-btn full-width">Calculate Goal Feasibility</button>
+            </form>
+            <div id="fg-results"
+                style="margin-top: 1.5rem; display: none; padding: 1rem; background-color: var(--bg-color); border: 1px solid var(--border-color);">
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Main Dashboard (Individual Profile) -->
+    <div id="main-app">
+        <header>
+            <div>
+                <h1>Life & Finance Planner</h1>
+                <span id="user-greeting" style="font-size: 0.875rem; color: var(--text-secondary);"></span>
+            </div>
+            <div class="header-actions">
+                <button id="theme-toggle" class="btn outline-btn">Toggle Theme</button>
+                <button id="logout-btn" class="btn outline-btn">Back to Login</button>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="left-panel">
+                <section id="section-profile" class="card">
+                    <h2>1. Profile & Financials</h2>
+                    <form id="profile-form">
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" id="fullName" required>
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="currentAge">Current Age</label>
+                                <input type="number" id="currentAge" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="retirementAge">Retirement Target Age</label>
+                                <input type="number" id="retirementAge" required>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="monthlyIncome">Monthly Income (₹)</label>
+                                <input type="number" id="monthlyIncome" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="monthlyExpenses">Monthly Expenses (₹)</label>
+                                <input type="number" id="monthlyExpenses" required>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="currentSavings">Current Savings (₹)</label>
+                                <input type="number" id="currentSavings" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="incomeGrowth">Annual Income Growth (%)</label>
+                                <input type="number" id="incomeGrowth" step="0.1" required>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="investmentReturns">Expected Investment Returns (%)</label>
+                                <input type="number" id="investmentReturns" step="0.1" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="inflationRate">Inflation Rate (%)</label>
+                                <input type="number" id="inflationRate" step="0.1" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn primary-btn full-width" id="calculate-btn">Save &
+                            Calculate</button>
+                    </form>
+                </section>
+
+                <section id="section-individual-goals" class="card">
+                    <h2>2. Individual Goal Planner</h2>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Plan a personal
+                        goal (e.g. New Car, Gadget) and see if your <b>individual surplus</b> is enough to cover it.</p>
+                    <form id="individual-goal-form">
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="ig-name">Goal Name</label>
+                                <input type="text" id="ig-name" placeholder="E.g. Buy a Car" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="ig-amount">Target Amount (₹)</label>
+                                <input type="number" id="ig-amount" required>
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="ig-years">Years to Achieve</label>
+                                <input type="number" id="ig-years" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="ig-returns">Expected Return (%)</label>
+                                <input type="number" id="ig-returns" value="10" step="0.1" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn outline-btn full-width">Calculate Goal Feasibility</button>
+                    </form>
+                    <div id="ig-results"
+                        style="margin-top: 1.5rem; display: none; padding: 1rem; background-color: var(--bg-color); border: 1px solid var(--border-color);">
+                    </div>
+                </section>
+
+                <section id="section-events" class="card">
+                    <h2>3. Life Events</h2>
+                    <form id="event-form">
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="eventName">Event Name</label>
+                                <input type="text" id="eventName" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="eventAge">At Age</label>
+                                <input type="number" id="eventAge" required>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="eventType">Type</label>
+                                <select id="eventType" required>
+                                    <option value="one-time">One-time cost (E.g. House, Car)</option>
+                                    <option value="emi">Monthly EMI</option>
+                                    <option value="recurring">Monthly recurring expense</option>
+                                    <option value="income-stops">Income stops</option>
+                                    <option value="income-boost">Income boost</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="eventAmount">Amount (₹)</label>
+                                <input type="number" id="eventAmount" required>
+                            </div>
+                        </div>
+
+                        <div class="grid-2" id="duration-container" style="display: none;">
+                            <div class="input-group">
+                                <label for="eventDuration">Duration (Years)</label>
+                                <input type="number" id="eventDuration">
+                            </div>
+                            <div class="input-group">
+                                <label>Color</label>
+                                <div class="color-picker" id="eventColorPicker">
+                                    <span class="color-swatch selected" data-color="#e74c3c"
+                                        style="background-color: #e74c3c;"></span>
+                                    <span class="color-swatch" data-color="#3498db"
+                                        style="background-color: #3498db;"></span>
+                                    <span class="color-swatch" data-color="#9b59b6"
+                                        style="background-color: #9b59b6;"></span>
+                                    <span class="color-swatch" data-color="#f1c40f"
+                                        style="background-color: #f1c40f;"></span>
+                                    <span class="color-swatch" data-color="#e67e22"
+                                        style="background-color: #e67e22;"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn outline-btn full-width" id="add-event-btn">Add Event to
+                            Simulation</button>
+                    </form>
+
+                    <div id="events-list" class="pills-container"></div>
+                </section>
+
+                <section id="section-shocks" class="card">
+                    <h2>4. Stress Test (Future Shocks)</h2>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Apply sudden,
+                        temporary shocks occurring <strong>5 years from now</strong> to see if your plan survives.</p>
+                    <div class="grid-2">
+                        <button class="btn outline-btn" onclick="applyShock('crash')">30% Market Crash</button>
+                        <button class="btn outline-btn" onclick="applyShock('job-loss')">1-Year Job Loss</button>
+                    </div>
+                    <div class="grid-2" style="margin-top:-0.5rem">
+                        <button class="btn outline-btn" onclick="applyShock('medical')">₹10L Medical Exp.</button>
+                        <button class="btn danger-outline-btn" onclick="clearShocks()">Clear Shocks</button>
+                    </div>
+                    <div id="active-shocks-display"
+                        style="margin-top: 1rem; color: var(--danger-color); font-size: 0.875rem; font-weight: 500;">
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <section id="section-output" class="card">
+                    <h2>Simulation Output</h2>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Net Worth at Retirement</div>
+                            <div class="metric-value" id="metric-nw-ret">₹0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Peak Net Worth & Age</div>
+                            <div class="metric-value" id="metric-peak-nw">₹0 <span>(-)</span></div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">FIRE Number & Age Reached</div>
+                            <div class="metric-value" id="metric-fire">₹0 <span>(-)</span></div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Final Corpus at 75</div>
+                            <div class="metric-value" id="metric-final-corpus">₹0</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="simulationChart"></canvas>
+                    </div>
+
+                    <div class="phase-bar-container">
+                        <div class="phase-bar" id="phase-bar">
+                            <div class="phase-accumulate" id="phase-accumulate" title="Accumulation Phase"></div>
+                            <div class="phase-retire" id="phase-retire" title="Retirement Phase"></div>
+                        </div>
+                        <div class="phase-labels">
+                            <span id="phase-start-label">Age</span>
+                            <span id="phase-retire-label">Retire</span>
+                            <span id="phase-end-label">75</span>
+                        </div>
+                    </div>
+
+                    <div class="insights-box">
+                        <h3>Smart Insights</h3>
+                        <ul id="insights-list">
+                            <li>Calculate to see insights.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const formatINR = (number) => {
+            if (isNaN(number)) return '₹0';
+            let num = Math.round(number);
+            let absNum = Math.abs(num);
+            let formatted = '';
+
+            if (absNum >= 10000000) {
+                formatted = '₹' + (absNum / 10000000).toFixed(2) + 'Cr';
+            } else if (absNum >= 100000) {
+                formatted = '₹' + (absNum / 100000).toFixed(2) + 'L';
+            } else if (absNum >= 1000) {
+                formatted = '₹' + (absNum / 1000).toFixed(2) + 'K';
+            } else {
+                formatted = '₹' + absNum;
+            }
+
+            return num < 0 ? '-' + formatted : formatted;
+        };
+
+        let currentUser = null;
+        let activeShocks = [];
+        let globalTheme = localStorage.getItem('lifePlannerGlobalTheme') || 'light';
+
+        let appState = {
+            profile: {
+                fullName: '', currentAge: 30, retirementAge: 55,
+                monthlyIncome: 100000, monthlyExpenses: 50000, currentSavings: 500000,
+                incomeGrowth: 5, investmentReturns: 10, inflationRate: 6
+            },
+            events: []
+        };
+
+        let simulationChart = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.documentElement.setAttribute('data-theme', globalTheme);
+            setupThemeToggle();
+            setupEventListeners();
+
+            // Login Screen Create Member
+            document.getElementById('login-create-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const user = document.getElementById('login-new-name').value.trim();
+                if (user) {
+                    loginUser(user);
+                }
+                document.getElementById('login-new-name').value = '';
+            });
+
+            // Family Goal Form
+            document.getElementById('family-goal-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                calculateFamilyGoal();
+            });
+
+            // Individual Goal Form
+            document.getElementById('individual-goal-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                calculateIndividualGoal();
+            });
+
+            // Back to Login (Logout)
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                logoutUser();
+            });
+
+            // Start at Login Screen
+            showLoginScreen();
+        });
+
+        function showLoginScreen() {
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('family-dashboard').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+
+            let members = getAllFamilyMembers();
+            let list = document.getElementById('login-member-list');
+            list.innerHTML = '';
+
+            if (members.length === 0) {
+                list.innerHTML = `<div style="text-align:center; color: var(--text-secondary);">No profiles found. Create one below!</div>`;
+            } else {
+                members.forEach(m => {
+                    let btn = document.createElement('button');
+                    btn.className = 'btn outline-btn full-width';
+                    btn.textContent = m.username;
+                    btn.onclick = () => loginUser(m.username);
+                    list.appendChild(btn);
+                });
+            }
+        }
+
+        window.showFamilyDashboard = function () {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('family-dashboard').style.display = 'flex';
+
+            let members = getAllFamilyMembers();
+            let totalIncome = members.reduce((sum, m) => sum + m.income, 0);
+
+            document.getElementById('total-family-income').textContent = formatINR(totalIncome);
+
+            let grid = document.getElementById('family-members-grid');
+            grid.innerHTML = '';
+
+            if (members.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color: var(--text-secondary); padding: 2rem;">No family members added yet. Go back and create one!</div>`;
+            }
+
+            members.forEach(m => {
+                let percentage = totalIncome > 0 ? ((m.income / totalIncome) * 100).toFixed(1) : 0;
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3 style="margin-bottom:0.5rem; border:none;">${m.username}</h3>
+                    <div style="font-size: 1.75rem; font-weight:600; margin-bottom:0.5rem;">${formatINR(m.income)}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem;">Contribution: <strong>${percentage}%</strong></div>
+                    <button class="btn outline-btn full-width" onclick="loginUser('${m.username}')">Open Profile</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.loginUser = function (user) {
+            currentUser = user;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('family-dashboard').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-greeting').textContent = `Editing profile: ${user}`;
+
+            loadState();
+            renderEventPills();
+            clearShocks(false);
+
+            if (appState.profile.fullName) {
+                runSimulation();
+            } else {
+                document.getElementById('fullName').value = user;
+            }
+        }
+
+        function logoutUser() {
+            if (currentUser) saveState();
+            currentUser = null;
+            if (simulationChart) simulationChart.destroy();
+
+            // Clear goal results
+            document.getElementById('fg-results').style.display = 'none';
+            document.getElementById('family-goal-form').reset();
+            document.getElementById('ig-results').style.display = 'none';
+            document.getElementById('individual-goal-form').reset();
+
+            showLoginScreen();
+        }
+
+        function getAllFamilyMembers() {
+            let members = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('lifePlannerData_')) {
+                    try {
+                        let data = JSON.parse(localStorage.getItem(key));
+                        let username = key.replace('lifePlannerData_', '');
+                        members.push({
+                            username: username,
+                            income: data.profile.monthlyIncome || 0,
+                            expenses: data.profile.monthlyExpenses || 0
+                        });
+                    } catch (e) { console.error(e); }
+                }
+            }
+            return members;
+        }
+
+        function calculateFamilyGoal() {
+            const members = getAllFamilyMembers();
+            const totalIncome = members.reduce((sum, m) => sum + m.income, 0);
+            const totalExpenses = members.reduce((sum, m) => sum + m.expenses, 0);
+            const familySurplus = totalIncome - totalExpenses;
+
+            const name = document.getElementById('fg-name').value;
+            const amount = parseFloat(document.getElementById('fg-amount').value);
+            const years = parseInt(document.getElementById('fg-years').value);
+            const returns = parseFloat(document.getElementById('fg-returns').value) / 100;
+
+            const months = years * 12;
+            const r_monthly = returns / 12;
+
+            let sip = 0;
+            if (r_monthly === 0) {
+                sip = amount / months;
+            } else {
+                sip = amount * r_monthly / (Math.pow(1 + r_monthly, months) - 1);
+            }
+
+            const minRequiredSalary = totalExpenses + sip;
+
+            let resultsHtml = `<h3 style="margin-bottom: 0.5rem;">Results for: ${name}</h3>`;
+            resultsHtml += `<ul style="list-style: inside; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">`;
+            resultsHtml += `<li><strong>Required Monthly Savings:</strong> ${formatINR(sip)}/mo</li>`;
+            resultsHtml += `<li><strong>Current Family Surplus:</strong> ${formatINR(familySurplus)}/mo</li>`;
+
+            if (familySurplus >= sip) {
+                resultsHtml += `<li style="color: var(--accent-color);">✅ Your family's current income is sufficient. You have enough surplus to start this SIP today!</li>`;
+                resultsHtml += `<li><strong>Minimum Required Family Salary:</strong> ${formatINR(minRequiredSalary)}/mo</li>`;
+            } else {
+                const shortfall = sip - familySurplus;
+                resultsHtml += `<li style="color: var(--danger-color);">🚨 Your family is running a shortfall. You cannot afford this goal with your current expenses.</li>`;
+                resultsHtml += `<li><strong>Minimum Required Family Salary:</strong> ${formatINR(minRequiredSalary)}/mo</li>`;
+                resultsHtml += `<li><strong>Extra Income Needed:</strong> To afford this without cutting expenses, the family needs to earn an additional <strong>${formatINR(shortfall)}/mo</strong>.</li>`;
+            }
+            resultsHtml += `</ul>`;
+
+            const resultsDiv = document.getElementById('fg-results');
+            resultsDiv.innerHTML = resultsHtml;
+            resultsDiv.style.display = 'block';
+        }
+
+        function calculateIndividualGoal() {
+            // Get values dynamically in case user changed them but hasn't saved yet
+            const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value) || 0;
+            const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value) || 0;
+            const individualSurplus = monthlyIncome - monthlyExpenses;
+
+            const name = document.getElementById('ig-name').value;
+            const amount = parseFloat(document.getElementById('ig-amount').value);
+            const years = parseInt(document.getElementById('ig-years').value);
+            const returns = parseFloat(document.getElementById('ig-returns').value) / 100;
+
+            const months = years * 12;
+            const r_monthly = returns / 12;
+
+            let sip = 0;
+            if (r_monthly === 0) {
+                sip = amount / months;
+            } else {
+                sip = amount * r_monthly / (Math.pow(1 + r_monthly, months) - 1);
+            }
+
+            const minRequiredSalary = monthlyExpenses + sip;
+
+            let resultsHtml = `<h3 style="margin-bottom: 0.5rem;">Results for: ${name}</h3>`;
+            resultsHtml += `<ul style="list-style: inside; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">`;
+            resultsHtml += `<li><strong>Required Monthly Savings:</strong> ${formatINR(sip)}/mo</li>`;
+            resultsHtml += `<li><strong>Your Current Surplus:</strong> ${formatINR(individualSurplus)}/mo</li>`;
+
+            if (individualSurplus >= sip) {
+                resultsHtml += `<li style="color: var(--accent-color);">✅ Your current income is sufficient. You have enough surplus to start this SIP today!</li>`;
+                resultsHtml += `<li><strong>Minimum Required Salary:</strong> ${formatINR(minRequiredSalary)}/mo</li>`;
+            } else {
+                const shortfall = sip - individualSurplus;
+                resultsHtml += `<li style="color: var(--danger-color);">🚨 You are running a shortfall. You cannot afford this goal with your current expenses.</li>`;
+                resultsHtml += `<li><strong>Minimum Required Salary:</strong> ${formatINR(minRequiredSalary)}/mo</li>`;
+                resultsHtml += `<li><strong>Extra Income Needed:</strong> To afford this without cutting expenses, you need to earn an additional <strong>${formatINR(shortfall)}/mo</strong>.</li>`;
+            }
+            resultsHtml += `</ul>`;
+
+            const resultsDiv = document.getElementById('ig-results');
+            resultsDiv.innerHTML = resultsHtml;
+            resultsDiv.style.display = 'block';
+        }
+
+        function setupThemeToggle() {
+            const toggleFn = () => {
+                globalTheme = globalTheme === 'light' ? 'dark' : 'light';
+                localStorage.setItem('lifePlannerGlobalTheme', globalTheme);
+                document.documentElement.setAttribute('data-theme', globalTheme);
+                if (simulationChart && currentUser) runSimulation();
+            };
+            document.getElementById('theme-toggle').addEventListener('click', toggleFn);
+            document.getElementById('db-theme-toggle').addEventListener('click', toggleFn);
+            document.getElementById('login-theme-toggle').addEventListener('click', toggleFn);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('eventType').addEventListener('change', (e) => {
+                const type = e.target.value;
+                const durationContainer = document.getElementById('duration-container');
+                if (['emi', 'recurring', 'income-stops', 'income-boost'].includes(type)) {
+                    durationContainer.style.display = 'grid';
+                } else {
+                    durationContainer.style.display = 'none';
+                }
+            });
+
+            document.querySelectorAll('.color-swatch').forEach(swatch => {
+                swatch.addEventListener('click', (e) => {
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                });
+            });
+
+            document.getElementById('event-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                addEvent();
+            });
+
+            document.getElementById('profile-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                updateProfileFromForm();
+                saveState();
+                runSimulation();
+            });
+        }
+
+        function saveState() {
+            if (currentUser) {
+                localStorage.setItem(`lifePlannerData_${currentUser}`, JSON.stringify(appState));
+            }
+        }
+
+        function loadState() {
+            if (!currentUser) return;
+            const data = localStorage.getItem(`lifePlannerData_${currentUser}`);
+            if (data) {
+                try {
+                    appState = JSON.parse(data);
+                } catch (e) { console.error("Error parsing data", e); }
+            } else {
+                appState = {
+                    profile: { fullName: currentUser, currentAge: 30, retirementAge: 55, monthlyIncome: 100000, monthlyExpenses: 50000, currentSavings: 500000, incomeGrowth: 5, investmentReturns: 10, inflationRate: 6 },
+                    events: []
+                };
+            }
+            populateForm();
+        }
+
+        function populateForm() {
+            const p = appState.profile;
+            document.getElementById('fullName').value = p.fullName;
+            document.getElementById('currentAge').value = p.currentAge;
+            document.getElementById('retirementAge').value = p.retirementAge;
+            document.getElementById('monthlyIncome').value = p.monthlyIncome;
+            document.getElementById('monthlyExpenses').value = p.monthlyExpenses;
+            document.getElementById('currentSavings').value = p.currentSavings;
+            document.getElementById('incomeGrowth').value = p.incomeGrowth;
+            document.getElementById('investmentReturns').value = p.investmentReturns;
+            document.getElementById('inflationRate').value = p.inflationRate;
+        }
+
+        function updateProfileFromForm() {
+            appState.profile = {
+                fullName: document.getElementById('fullName').value,
+                currentAge: parseInt(document.getElementById('currentAge').value) || 0,
+                retirementAge: parseInt(document.getElementById('retirementAge').value) || 0,
+                monthlyIncome: parseFloat(document.getElementById('monthlyIncome').value) || 0,
+                monthlyExpenses: parseFloat(document.getElementById('monthlyExpenses').value) || 0,
+                currentSavings: parseFloat(document.getElementById('currentSavings').value) || 0,
+                incomeGrowth: parseFloat(document.getElementById('incomeGrowth').value) || 0,
+                investmentReturns: parseFloat(document.getElementById('investmentReturns').value) || 0,
+                inflationRate: parseFloat(document.getElementById('inflationRate').value) || 0
+            };
+        }
+
+        function addEvent() {
+            const name = document.getElementById('eventName').value;
+            const age = parseInt(document.getElementById('eventAge').value);
+            const type = document.getElementById('eventType').value;
+            const amount = parseFloat(document.getElementById('eventAmount').value);
+            const duration = parseInt(document.getElementById('eventDuration').value) || 0;
+
+            const selectedSwatch = document.querySelector('.color-swatch.selected');
+            const color = selectedSwatch ? selectedSwatch.dataset.color : '#e74c3c';
+
+            appState.events.push({ id: Date.now().toString(), name, age, type, amount, duration, color, active: true });
+            saveState();
+            renderEventPills();
+
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventAmount').value = '';
+
+            if (appState.profile.fullName) runSimulation();
+        }
+
+        window.deleteEvent = function (id, event) {
+            event.stopPropagation();
+            appState.events = appState.events.filter(e => e.id !== id);
+            saveState();
+            renderEventPills();
+            if (appState.profile.fullName) runSimulation();
+        };
+
+        window.toggleEvent = function (id) {
+            const ev = appState.events.find(e => e.id === id);
+            if (ev) {
+                ev.active = !ev.active;
+                saveState();
+                renderEventPills();
+                if (appState.profile.fullName) runSimulation();
+            }
+        };
+
+        function renderEventPills() {
+            const container = document.getElementById('events-list');
+            container.innerHTML = '';
+            appState.events.forEach(ev => {
+                const pill = document.createElement('div');
+                pill.className = `event-pill ${ev.active ? '' : 'inactive'}`;
+                pill.onclick = () => toggleEvent(ev.id);
+                pill.innerHTML = `
+                    <div class="event-pill-color" style="background-color: ${ev.color}"></div>
+                    <span>${ev.name} (Age ${ev.age}) - ${ev.type}: ${formatINR(ev.amount)}</span>
+                    <button class="delete-pill" onclick="deleteEvent('${ev.id}', event)">×</button>
+                `;
+                container.appendChild(pill);
+            });
+        }
+
+        // --- Shocks Logic ---
+        window.applyShock = function (type) {
+            if (!activeShocks.includes(type)) {
+                activeShocks.push(type);
+                updateShockDisplay();
+                if (appState.profile.fullName) runSimulation();
+            }
+        };
+
+        window.clearShocks = function (runSim = true) {
+            activeShocks = [];
+            updateShockDisplay();
+            if (runSim && appState.profile.fullName) runSimulation();
+        };
+
+        function updateShockDisplay() {
+            const display = document.getElementById('active-shocks-display');
+            if (activeShocks.length === 0) {
+                display.innerHTML = '';
+                return;
+            }
+            let labels = activeShocks.map(s => {
+                if (s === 'crash') return "30% Market Crash";
+                if (s === 'job-loss') return "1-Yr Job Loss";
+                if (s === 'medical') return "10L Medical Exp";
+            });
+            display.innerHTML = `🚨 ACTIVE SHOCKS: ${labels.join(', ')}`;
+        }
+
+        function runSimulation() {
+            const p = appState.profile;
+            const endAge = 75;
+
+            if (p.currentAge >= endAge || p.currentAge > p.retirementAge) {
+                alert("Please ensure current age < retirement age <= 75");
+                return;
+            }
+
+            let labels = [], netWorthData = [], fireLineData = [];
+            let currentNW = p.currentSavings;
+            let currentAnnualIncome = p.monthlyIncome * 12;
+            let currentAnnualExpenses = p.monthlyExpenses * 12;
+
+            let peakNW = { amount: currentNW, age: p.currentAge };
+            let fireReachedAge = null;
+            let nwAtRetirement = 0;
+
+            const returnMult = 1 + (p.investmentReturns / 100);
+            const incomeGrowthMult = 1 + (p.incomeGrowth / 100);
+            const inflationMult = 1 + (p.inflationRate / 100);
+            const activeEvents = appState.events.filter(e => e.active);
+
+            let minNW = currentNW;
+            let minNwAge = p.currentAge;
+            let futureGoalsInsights = [];
+
+            const r_annual = p.investmentReturns / 100;
+            const r_monthly = r_annual / 12;
+
+            activeEvents.forEach(ev => {
+                if (ev.type === 'one-time' && ev.age > p.currentAge) {
+                    const years = ev.age - p.currentAge;
+                    const months = years * 12;
+                    let sip = 0;
+                    if (r_monthly === 0) {
+                        sip = ev.amount / months;
+                    } else {
+                        sip = ev.amount * r_monthly / (Math.pow(1 + r_monthly, months) - 1);
+                    }
+                    futureGoalsInsights.push({ name: ev.name, age: ev.age, amount: ev.amount, sip: sip });
+                }
+            });
+
+            const shockAge = Math.min(p.currentAge + 5, endAge - 1);
+
+            for (let age = p.currentAge; age <= endAge; age++) {
+                labels.push(age);
+                let fireTarget = currentAnnualExpenses * 25;
+                fireLineData.push(fireTarget);
+
+                let yearIncome = age >= p.retirementAge ? 0 : currentAnnualIncome;
+                let yearExpenses = currentAnnualExpenses;
+                let oneTimeHits = 0;
+
+                activeEvents.forEach(ev => {
+                    const isOneTime = ev.type === 'one-time' && ev.age === age;
+                    const isRecurring = ['emi', 'recurring', 'income-stops', 'income-boost'].includes(ev.type) && age >= ev.age && age < ev.age + ev.duration;
+
+                    if (isOneTime) oneTimeHits += ev.amount;
+                    if (isRecurring) {
+                        if (['emi', 'recurring'].includes(ev.type)) yearExpenses += (ev.amount * 12);
+                        else if (ev.type === 'income-boost') yearIncome += (ev.amount * 12);
+                        else if (ev.type === 'income-stops') yearIncome = Math.max(0, yearIncome - (ev.amount * 12));
+                    }
+                });
+
+                if (age === shockAge) {
+                    if (activeShocks.includes('job-loss')) yearIncome = 0;
+                    if (activeShocks.includes('medical')) oneTimeHits += 1000000;
+                }
+
+                let yearSavings = yearIncome - yearExpenses;
+                currentNW = (currentNW * returnMult) + yearSavings - oneTimeHits;
+
+                if (age === shockAge && activeShocks.includes('crash')) currentNW *= 0.70;
+
+                netWorthData.push(currentNW);
+
+                if (currentNW < minNW) { minNW = currentNW; minNwAge = age; }
+                if (currentNW > peakNW.amount) peakNW = { amount: currentNW, age: age };
+                if (age === p.retirementAge) nwAtRetirement = currentNW;
+                if (fireReachedAge === null && currentNW >= fireTarget) fireReachedAge = age;
+
+                if (age < p.retirementAge) currentAnnualIncome *= incomeGrowthMult;
+                currentAnnualExpenses *= inflationMult;
+            }
+
+            updateMetrics(nwAtRetirement, peakNW, fireReachedAge, netWorthData[netWorthData.length - 1], fireLineData[p.retirementAge - p.currentAge], futureGoalsInsights, minNW, minNwAge, r_monthly);
+            updatePhaseBar(p.currentAge, p.retirementAge, endAge);
+            updateChart(labels, netWorthData, fireLineData);
+        }
+
+        function updateMetrics(nwRet, peak, fireAge, finalCorpus, fireTargetAtRet, futureGoals, minNW, minNwAge, r_monthly) {
+            document.getElementById('metric-nw-ret').textContent = formatINR(nwRet);
+            document.getElementById('metric-peak-nw').innerHTML = `${formatINR(peak.amount)} <span>(Age ${peak.age})</span>`;
+            document.getElementById('metric-fire').innerHTML = fireAge ? `${formatINR(fireTargetAtRet)} <span>(Age ${fireAge})</span>` : `${formatINR(fireTargetAtRet)} <span>(Not Reached)</span>`;
+
+            const elFinal = document.getElementById('metric-final-corpus');
+            elFinal.textContent = formatINR(finalCorpus);
+            elFinal.className = `metric-value ${finalCorpus < 0 ? 'negative' : ''}`;
+
+            const p = appState.profile;
+            const savingsRate = ((p.monthlyIncome - p.monthlyExpenses) / p.monthlyIncome * 100).toFixed(1);
+            let insightsHtml = `<li>Current Savings Rate: <strong>${savingsRate}%</strong></li>`;
+
+            if (activeShocks.length > 0) {
+                insightsHtml += `<li style="color:var(--danger-color)">🚨 <strong>Stress Test Active:</strong> You are viewing projections with simulated disasters applied at Age ${Math.min(p.currentAge + 5, 74)}.</li>`;
+            }
+
+            if (fireAge) {
+                insightsHtml += `<li>🎉 You are on track to achieve FIRE by age <strong>${fireAge}</strong>.</li>`;
+            } else {
+                insightsHtml += `<li>⚠️ You might not hit your FIRE number before retirement based on current projections.</li>`;
+            }
+
+            if (finalCorpus < 0 || minNW < 0) {
+                let deficit = Math.abs(Math.min(finalCorpus, minNW));
+                let yearsToDeficit = minNwAge - p.currentAge;
+                if (yearsToDeficit <= 0) yearsToDeficit = 1;
+                let months = yearsToDeficit * 12;
+                let extraSip = 0;
+
+                if (r_monthly === 0) extraSip = deficit / months;
+                else extraSip = deficit * r_monthly / (Math.pow(1 + r_monthly, months) - 1);
+
+                insightsHtml += `<li>🚨 <strong>Shortfall Warning:</strong> Your corpus drops below zero around age ${minNwAge}. To prevent this, you need to save an <strong>additional ${formatINR(extraSip)}/month</strong> starting now to avoid debt.</li>`;
+            } else {
+                insightsHtml += `<li>✅ Your corpus outlasts your 75th birthday safely.</li>`;
+            }
+
+            if (futureGoals && futureGoals.length > 0) {
+                futureGoals.forEach(g => {
+                    insightsHtml += `<li>🎯 <strong>Goal: ${g.name}</strong> (Age ${g.age}, ${formatINR(g.amount)}).<br>
+                    &nbsp;&nbsp;➔ <strong>How much to save:</strong> You need a dedicated SIP of <strong>${formatINR(g.sip)}/mo</strong> to fund this.<br>
+                    &nbsp;&nbsp;➔ <strong>How much more to earn:</strong> If your current budget has no room, you must increase your income by <strong>${formatINR(g.sip)}/mo</strong> to afford this without hurting your retirement.</li>`;
+                });
+            }
+
+            document.getElementById('insights-list').innerHTML = insightsHtml;
+        }
+
+        function updatePhaseBar(start, retire, end) {
+            const totalYears = end - start;
+            if (totalYears <= 0) return;
+            document.getElementById('phase-accumulate').style.width = `${Math.max(0, retire - start) / totalYears * 100}%`;
+            document.getElementById('phase-retire').style.width = `${(end - retire) / totalYears * 100}%`;
+            document.getElementById('phase-start-label').textContent = start;
+            document.getElementById('phase-retire-label').textContent = retire;
+            document.getElementById('phase-end-label').textContent = end;
+        }
+
+        function updateChart(labels, netWorthData, fireLineData) {
+            const ctx = document.getElementById('simulationChart').getContext('2d');
+            const isDark = globalTheme === 'dark';
+            const textColor = isDark ? '#e0e0e0' : '#212529';
+            const gridColor = isDark ? '#333333' : '#dee2e6';
+
+            if (simulationChart) simulationChart.destroy();
+
+            let pointColors = labels.map(age => age === Math.min(appState.profile.currentAge + 5, 74) && activeShocks.length > 0 ? '#e74c3c' : '#1D9E75');
+            let pointRadii = labels.map(age => age === Math.min(appState.profile.currentAge + 5, 74) && activeShocks.length > 0 ? 6 : 2);
+
+            simulationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Net Worth Trajectory', data: netWorthData, borderColor: '#1D9E75', backgroundColor: 'rgba(29, 158, 117, 0.2)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: pointRadii, pointBackgroundColor: pointColors },
+                        { label: 'FIRE Target (25x Exp)', data: fireLineData, borderColor: '#f39c12', borderWidth: 2, borderDash: [5, 5], fill: false, pointRadius: 0, tension: 0.1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, color: textColor,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: textColor } },
+                        tooltip: { callbacks: { label: function (c) { let l = c.dataset.label || ''; if (l) l += ': '; if (c.parsed.y !== null) l += formatINR(c.parsed.y); return l; } } }
+                    },
+                    scales: {
+                        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, callback: v => formatINR(v) }, suggestedMin: Math.min(...netWorthData, 0) }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
